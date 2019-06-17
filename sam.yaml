@@ -1,0 +1,26 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: A Lambda to access SSM parameters
+
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+
+Resources:
+  SSMParameterAccess:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: 'SSMParameterAccess'
+      Handler: aws-ssm-access
+      Runtime: go1.x
+      CodeUri: .
+      Tracing: Active
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource: '*'
