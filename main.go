@@ -59,7 +59,7 @@ func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 	}
 
 	// Convert the CloudFormation response to JSON
-	JSON, err := BuildJSON(&res)
+	JSON, err := buildJSON(&res)
 	if err != nil {
 		return fmt.Errorf("JSON error: %v", err)
 	}
@@ -84,7 +84,10 @@ func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 	return nil
 }
 
-func buildCloudFormationResponse(event CloudFormationCustomResourceEvent, parameterValue string) CloudFormationCustomResourceResponse {
+func buildCloudFormationResponse(
+	event CloudFormationCustomResourceEvent,
+	parameterValue string,
+) CloudFormationCustomResourceResponse {
 	// Create a response struct
 	res := CloudFormationCustomResourceResponse{
 		Status:             "SUCCESS",
@@ -102,7 +105,7 @@ func buildCloudFormationResponse(event CloudFormationCustomResourceEvent, parame
 }
 
 // BuildJSON builds a JSON string from a CF Response
-func BuildJSON(res *CloudFormationCustomResourceResponse) ([]byte, error) {
+func buildJSON(res *CloudFormationCustomResourceResponse) ([]byte, error) {
 	resJSON, err := json.Marshal(res)
 	if err != nil {
 		return []byte{}, err
