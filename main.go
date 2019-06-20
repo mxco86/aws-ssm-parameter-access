@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./aws"
 	"./ssmaccess"
 	"bytes"
 	"context"
@@ -10,37 +11,11 @@ import (
 	"net/http"
 )
 
-// CloudFormationCustomResourceEvent -- an event
-type CloudFormationCustomResourceEvent struct {
-	RequestType        string `json:"RequestType"`
-	ResponseURL        string `json:"ResponseURL"`
-	StackID            string `json:"StackId"`
-	RequestID          string `json:"RequestId"`
-	ResourceType       string `json:"ResourceType"`
-	LogicalResourceID  string `json:"LogicalResourceId"`
-	ResourceProperties struct {
-		ParameterName string `json:"ParameterName"`
-	} `json:"ResourceProperties"`
-}
-
-// CloudFormationCustomResourceResponse -- a response
-type CloudFormationCustomResourceResponse struct {
-	Status             string `json:"Status"`
-	NoEcho             bool   `json:"NoEcho"`
-	StackID            string `json:"StackId"`
-	RequestID          string `json:"RequestId"`
-	LogicalResourceID  string `json:"LogicalResourceId"`
-	PhysicalResourceID string `json:"PhysicalResourceId"`
-	Data               struct {
-		ParameterValue string `json:"ParameterValue"`
-	} `json:"Data"`
-}
-
 // handle the CloudFormation request
 func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 
 	// Unmarshall here rather than on invocation to ensure we catch errors
-	var event CloudFormationCustomResourceEvent
+	var event awstypes.CloudFormationCustomResourceEvent
 	err := json.Unmarshal(inputEvent, &event)
 	if err != nil {
 		return fmt.Errorf("Input event error: %v", err)
@@ -59,7 +34,7 @@ func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 	}
 
 	// Convert the CloudFormation response to JSON
-	JSON, err := buildJSON(&res)
+	JSON, err := json.Marshal(res)
 	if err != nil {
 		return fmt.Errorf("JSON error: %v", err)
 	}
@@ -85,11 +60,11 @@ func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 }
 
 func buildCloudFormationResponse(
-	event CloudFormationCustomResourceEvent,
+	event awstypes.CloudFormationCustomResourceEvent,
 	parameterValue string,
-) CloudFormationCustomResourceResponse {
+) awstypes.CloudFormationCustomResourceResponse {
 	// Create a response struct
-	res := CloudFormationCustomResourceResponse{
+	res := awstypes.CloudFormationCustomResourceResponse{
 		Status:             "SUCCESS",
 		NoEcho:             true,
 		StackID:            event.StackID,
@@ -102,16 +77,6 @@ func buildCloudFormationResponse(
 	res.Data.ParameterValue = parameterValue
 
 	return res
-}
-
-// BuildJSON builds a JSON string from a CF Response
-func buildJSON(res *CloudFormationCustomResourceResponse) ([]byte, error) {
-	resJSON, err := json.Marshal(res)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	return resJSON, nil
 }
 
 func main() {
