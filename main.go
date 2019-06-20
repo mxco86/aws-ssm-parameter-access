@@ -1,8 +1,6 @@
 package main
 
 import (
-	"./aws"
-	"./ssmaccess"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -15,14 +13,14 @@ import (
 func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 
 	// Unmarshall here rather than on invocation to ensure we catch errors
-	var event awstypes.CloudFormationCustomResourceEvent
+	var event CloudFormationCustomResourceEvent
 	err := json.Unmarshal(inputEvent, &event)
 	if err != nil {
 		return fmt.Errorf("Input event error: %v", err)
 	}
 
 	// Grab the named parameter value from SSM
-	p, err := ssmaccess.SSMParameterAccess(event.ResourceProperties.ParameterName)
+	p, err := SSMParameterAccess(event.ResourceProperties.ParameterName)
 	if err != nil {
 		return fmt.Errorf("SSM access error: %v", err)
 	}
@@ -60,11 +58,11 @@ func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 }
 
 func buildCloudFormationResponse(
-	event awstypes.CloudFormationCustomResourceEvent,
+	event CloudFormationCustomResourceEvent,
 	parameterValue string,
-) awstypes.CloudFormationCustomResourceResponse {
+) CloudFormationCustomResourceResponse {
 	// Create a response struct
-	res := awstypes.CloudFormationCustomResourceResponse{
+	res := CloudFormationCustomResourceResponse{
 		Status:             "SUCCESS",
 		NoEcho:             true,
 		StackID:            event.StackID,

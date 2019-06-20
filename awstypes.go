@@ -1,4 +1,4 @@
-package awstypes
+package main
 
 // CloudFormationCustomResourceEvent -- an event
 type CloudFormationCustomResourceEvent struct {
