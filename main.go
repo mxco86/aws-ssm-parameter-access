@@ -5,9 +5,36 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-lambda-go/lambda"
 	"net/http"
+
+	"github.com/aws/aws-lambda-go/lambda"
 )
+
+// CloudFormationCustomResourceEvent -- an event
+type CloudFormationCustomResourceEvent struct {
+	RequestType        string `json:"RequestType"`
+	ResponseURL        string `json:"ResponseURL"`
+	StackID            string `json:"StackId"`
+	RequestID          string `json:"RequestId"`
+	ResourceType       string `json:"ResourceType"`
+	LogicalResourceID  string `json:"LogicalResourceId"`
+	ResourceProperties struct {
+		ParameterName string `json:"ParameterName"`
+	} `json:"ResourceProperties"`
+}
+
+// CloudFormationCustomResourceResponse -- a response
+type CloudFormationCustomResourceResponse struct {
+	Status             string `json:"Status"`
+	NoEcho             bool   `json:"NoEcho"`
+	StackID            string `json:"StackId"`
+	RequestID          string `json:"RequestId"`
+	LogicalResourceID  string `json:"LogicalResourceId"`
+	PhysicalResourceID string `json:"PhysicalResourceId"`
+	Data               struct {
+		ParameterValue string `json:"ParameterValue"`
+	} `json:"Data"`
+}
 
 // handle the CloudFormation request
 func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
@@ -59,8 +86,7 @@ func handleRequest(ctx context.Context, inputEvent json.RawMessage) error {
 
 func buildCloudFormationResponse(
 	event CloudFormationCustomResourceEvent,
-	parameterValue string,
-) CloudFormationCustomResourceResponse {
+	parameterValue string) CloudFormationCustomResourceResponse {
 	// Create a response struct
 	res := CloudFormationCustomResourceResponse{
 		Status:             "SUCCESS",
